@@ -53,6 +53,11 @@ async def lifespan(app: FastAPI):
         app.state.embed_client = local_embeddings.create_client()
         app.state.search_client = await pgvector_search.create_client()
 
+        if not settings.rag_proxy_token:
+            logging.getLogger("app.main").warning(
+                "RAG_PROXY_TOKEN is unset: /chat is open to anyone who can reach this host"
+            )
+
         if settings.safety_configured:
             from core.adapters import content_safety
 
@@ -77,7 +82,10 @@ async def lifespan(app: FastAPI):
 # Must run before the app is created so FastAPI gets auto-instrumented.
 configure_observability()
 
-app = FastAPI(lifespan=lifespan)
+# Hide the interactive API docs + schema in deployed environments (both set the
+# proxy token); keep them for local dev.
+_docs_off = {"docs_url": None, "redoc_url": None, "openapi_url": None}
+app = FastAPI(lifespan=lifespan, **(_docs_off if settings.rag_proxy_token else {}))
 
 app.add_middleware(
     CORSMiddleware,

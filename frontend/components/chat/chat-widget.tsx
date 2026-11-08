@@ -5,7 +5,7 @@ import { PaperPlaneRight, Robot, X } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { ChatMessageBubble } from "./chat-message";
-import { useChat } from "./use-chat";
+import { MAX_MESSAGE_CHARS, useChat } from "./use-chat";
 
 const SUGGESTIONS = [
   "What's Haruka's tech stack?",
@@ -99,6 +99,7 @@ export default function ChatWidget() {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            maxLength={MAX_MESSAGE_CHARS}
             placeholder="Ask about Haruka…"
             className="h-9 flex-1 border border-border bg-background px-2.5 text-sm outline-none focus-visible:border-ring"
           />

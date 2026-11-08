@@ -11,8 +11,26 @@ const chipClass =
 
 const linkClass = "text-foreground underline underline-offset-4 hover:text-muted-foreground";
 
-// Assistant answers are markdown; site routes navigate client-side so the
-// widget stays open, everything else opens in a new tab.
+// Model output is untrusted (it can be steered by the visitor), so links are
+// restricted: site routes navigate client-side so the widget stays open,
+// https links to a few known hosts open in a new tab, anything else renders as
+// plain text. Images are dropped (no fetching attacker URLs) and raw HTML is
+// never rendered (react-markdown's default).
+const LINK_HOSTS = ["github.com", "www.linkedin.com", "linkedin.com"];
+
+function isInternalRoute(href: string) {
+  return href.startsWith("/") && !href.startsWith("//") && !href.startsWith("/\\");
+}
+
+function isAllowedExternal(href: string) {
+  try {
+    const url = new URL(href);
+    return url.protocol === "https:" && LINK_HOSTS.includes(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 const markdownComponents: Components = {
   p: ({ ...props }) => <p className="mb-2 last:mb-0" {...props} />,
   ul: ({ ...props }) => <ul className="mb-2 list-disc space-y-0.5 pl-5 last:mb-0" {...props} />,
@@ -20,14 +38,16 @@ const markdownComponents: Components = {
   strong: ({ ...props }) => <strong className="font-semibold" {...props} />,
   code: ({ ...props }) => <code className="bg-background px-1 text-xs" {...props} />,
   a: ({ href = "", children }) =>
-    href.startsWith("/") ? (
+    isInternalRoute(href) ? (
       <Link href={href} className={linkClass}>
         {children}
       </Link>
-    ) : (
+    ) : isAllowedExternal(href) ? (
       <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
         {children}
       </a>
+    ) : (
+      <span>{children}</span>
     ),
 };
 
@@ -84,7 +104,12 @@ export function ChatMessageBubble({ message }: { message: ChatMessage }) {
         ) : isUser ? (
           <span className="whitespace-pre-wrap">{message.content}</span>
         ) : (
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={markdownComponents}
+            disallowedElements={["img"]}
+            unwrapDisallowed
+          >
             {message.content}
           </ReactMarkdown>
         )}

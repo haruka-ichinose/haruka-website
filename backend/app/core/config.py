@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     # Not every Foundry model accepts `temperature` (reasoning models reject it).
     # Set to null/empty to omit the parameter from the request entirely.
     chat_temperature: float | None = 0.3
+    # Cap on generated tokens per answer. Unset = omit the parameter (model
+    # default). Reasoning models may count thinking tokens against it, so check
+    # answers aren't truncated before lowering it.
+    chat_max_tokens: int | None = None
 
     # --- Local embeddings (sentence-transformers, replaces Azure OpenAI) ---
     local_embedding_model: str = "BAAI/bge-small-en-v1.5"
@@ -59,6 +63,11 @@ class Settings(BaseSettings):
     rag_mode: str = "local"
     rag_upstream_url: str = ""  # proxy mode: the Pi's public /chat URL (tunnel)
     rag_proxy_token: str = ""  # shared bearer; proxy sends it, local verifies it
+
+    # --- /chat rate limits (enforced on the Pi, in-memory) ---
+    chat_rate_per_minute: int = 8  # per client IP
+    chat_rate_per_day: int = 60  # per client IP
+    chat_global_per_day: int = 1000  # all clients combined: the cost ceiling
 
     # --- Azure AI Content Safety (Prompt Shields + harmful-content checks) ---
     azure_content_safety_endpoint: str = ""

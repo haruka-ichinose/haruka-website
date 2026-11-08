@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+// Mirrors the backend: models/chat.py MAX_MESSAGE_CHARS and the history the
+// service keeps (core/guardrails.py), so we don't send what it would drop.
+export const MAX_MESSAGE_CHARS = 1000;
+const MAX_HISTORY_MESSAGES = 6;
 
 export interface Citation {
   title: string;
@@ -23,6 +27,8 @@ interface StreamEvent {
   citations?: Citation[];
   message?: string;
 }
+
+class StreamError extends Error {}
 
 /**
  * Chat state + SSE-over-POST streaming against the backend `/chat` endpoint.
@@ -55,7 +61,7 @@ export function useChat() {
       if (!trimmed || isStreaming) return;
 
       setError(null);
-      const history = messagesRef.current.map((m) => ({
+      const history = messagesRef.current.slice(-MAX_HISTORY_MESSAGES).map((m) => ({
         role: m.role,
         content: m.content,
       }));
@@ -105,16 +111,16 @@ export function useChat() {
             } else if (event.type === "citations") {
               updateLast((m) => ({ ...m, citations: event.citations ?? [] }));
             } else if (event.type === "error") {
-              throw new Error(event.message ?? "stream error");
+              throw new StreamError(event.message ?? "Sorry, I couldn't answer that right now.");
             }
           }
         }
-      } catch {
+      } catch (err) {
         setError("Something went wrong. Please try again.");
-        updateLast((m) => ({
-          ...m,
-          content: m.content || "Sorry, I couldn't answer that right now.",
-        }));
+        // Stream errors carry a user-facing message (e.g. the rate limit).
+        const message =
+          err instanceof StreamError ? err.message : "Sorry, I couldn't answer that right now.";
+        updateLast((m) => ({ ...m, content: m.content || message }));
       } finally {
         setIsStreaming(false);
       }

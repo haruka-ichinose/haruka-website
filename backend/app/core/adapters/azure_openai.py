@@ -41,6 +41,8 @@ async def stream_chat(
     params: dict = {}
     if settings.chat_temperature is not None:
         params["temperature"] = settings.chat_temperature
+    if settings.chat_max_tokens is not None:
+        params["max_tokens"] = settings.chat_max_tokens
 
     stream = await client.chat.completions.create(
         model=settings.azure_openai_chat_deployment,
