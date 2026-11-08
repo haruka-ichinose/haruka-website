@@ -1,4 +1,6 @@
-"""Golden Q/A set grounded in the real portfolio content (projects + experience).
+"""Golden Q/A set grounded in the real portfolio content (projects, experience,
+profile, repo READMEs), plus two unanswerable questions whose reference is the
+bot's guiding behaviour rather than a fact.
 
 Reference answers are the ground truth for RAGAS (context recall, correctness)
 and the expected output for DeepEval's G-Eval. Kept factual and content-derived
@@ -92,5 +94,77 @@ GOLDEN: list[GoldenItem] = [
             "scraped from a private Obsidian repository."
         ),
         expected_url="/",
+    ),
+    GoldenItem(
+        question="What's Haruka's tech stack?",
+        reference=(
+            "Haruka works mainly in Python and TypeScript, with Next.js, React, and Vue.js on "
+            "the frontend, FastAPI, .NET, and Spring Boot on the backend, and AI tooling such "
+            "as RAG pipelines, Azure OpenAI, pgvector, and RAGAS/DeepEval evaluation, on "
+            "Azure, AWS, and Vercel."
+        ),
+        expected_url="/",
+    ),
+    GoldenItem(
+        question="Tell me about Haruka.",
+        reference=(
+            "Haruka is a software and AI engineer based in New Zealand, working as an AI "
+            "Engineer at Spark New Zealand since 2023. They studied Computer Science and "
+            "Physics at the University of Canterbury, followed by a Professional Master of "
+            "Computer Science."
+        ),
+        expected_url="/experience",
+    ),
+    GoldenItem(
+        question="What kind of work is Haruka focused on?",
+        reference=(
+            "Haruka is focused on AI engineering: building practical, well-evaluated LLM and "
+            "RAG applications and the software and infrastructure that make them reliable "
+            "in production."
+        ),
+        expected_url="/experience",
+    ),
+    GoldenItem(
+        question="How can I contact Haruka?",
+        reference=(
+            "Use the contact form in the footer of any page on the site, which sends a "
+            "message to Haruka's inbox. Haruka's GitHub profile is also linked."
+        ),
+        expected_url="/",
+    ),
+    GoldenItem(
+        question="What can you help me with?",
+        reference=(
+            "Mecha Haruka is an AI persona of Haruka that answers questions about Haruka's "
+            "projects, work and education history, skills, background, public GitHub "
+            "repositories, dev journal, and this website, using only that material."
+        ),
+        expected_url="/",
+    ),
+    GoldenItem(
+        question="Which version of Godot was the Apple Thinning VR game built with?",
+        reference=(
+            "According to its README, the Apple Thinning project is built on the Godot game "
+            "engine v3.4."
+        ),
+        expected_url="https://github.com/uc-vision/apple-thinning",
+    ),
+    GoldenItem(
+        question="What did Haruka do in 2015?",
+        reference=(
+            "The bot says it doesn't have information about 2015, describes the closest "
+            "thing it knows (Haruka's studies at the University of Canterbury from 2018 and "
+            "later work), suggests questions it can answer, and links the Experience page "
+            "(/experience)."
+        ),
+        expected_url="/experience",
+    ),
+    GoldenItem(
+        question="What is Haruka's favourite food?",
+        reference=(
+            "The bot says it doesn't have that information, offers what it can talk about "
+            "instead (Haruka's projects, experience, skills, and dev journal) with suggested "
+            "questions, and links a relevant page such as the dev journal (/journal)."
+        ),
     ),
 ]

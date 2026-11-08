@@ -1,4 +1,6 @@
 import Link from "next/link";
+import ReactMarkdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ArrowUpRight, GithubLogo } from "@phosphor-icons/react";
 
 import { cn } from "@/lib/utils";
@@ -6,6 +8,48 @@ import type { ChatMessage, Citation } from "./use-chat";
 
 const chipClass =
   "inline-flex items-center gap-1 border border-border bg-background px-2 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground";
+
+const linkClass = "text-foreground underline underline-offset-4 hover:text-muted-foreground";
+
+// Model output is untrusted (it can be steered by the visitor), so links are
+// restricted: site routes navigate client-side so the widget stays open,
+// https links to a few known hosts open in a new tab, anything else renders as
+// plain text. Images are dropped (no fetching attacker URLs) and raw HTML is
+// never rendered (react-markdown's default).
+const LINK_HOSTS = ["github.com", "www.linkedin.com", "linkedin.com"];
+
+function isInternalRoute(href: string) {
+  return href.startsWith("/") && !href.startsWith("//") && !href.startsWith("/\\");
+}
+
+function isAllowedExternal(href: string) {
+  try {
+    const url = new URL(href);
+    return url.protocol === "https:" && LINK_HOSTS.includes(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+const markdownComponents: Components = {
+  p: ({ ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+  ul: ({ ...props }) => <ul className="mb-2 list-disc space-y-0.5 pl-5 last:mb-0" {...props} />,
+  ol: ({ ...props }) => <ol className="mb-2 list-decimal space-y-0.5 pl-5 last:mb-0" {...props} />,
+  strong: ({ ...props }) => <strong className="font-semibold" {...props} />,
+  code: ({ ...props }) => <code className="bg-background px-1 text-xs" {...props} />,
+  a: ({ href = "", children }) =>
+    isInternalRoute(href) ? (
+      <Link href={href} className={linkClass}>
+        {children}
+      </Link>
+    ) : isAllowedExternal(href) ? (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
+        {children}
+      </a>
+    ) : (
+      <span>{children}</span>
+    ),
+};
 
 function CitationChips({ citation }: { citation: Citation }) {
   const isInternal = citation.url.startsWith("/");
@@ -49,14 +93,25 @@ export function ChatMessageBubble({ message }: { message: ChatMessage }) {
     <div className={cn("flex flex-col gap-1.5", isUser ? "items-end" : "items-start")}>
       <div
         className={cn(
-          "max-w-[85%] border px-3 py-2 text-sm leading-relaxed whitespace-pre-wrap",
+          "max-w-[85%] border px-3 py-2 text-sm leading-relaxed",
           isUser
             ? "border-transparent bg-primary text-primary-foreground"
             : "border-border bg-muted text-foreground"
         )}
       >
-        {message.content || (
+        {!message.content ? (
           <span className="inline-block animate-pulse text-muted-foreground">…</span>
+        ) : isUser ? (
+          <span className="whitespace-pre-wrap">{message.content}</span>
+        ) : (
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={markdownComponents}
+            disallowedElements={["img"]}
+            unwrapDisallowed
+          >
+            {message.content}
+          </ReactMarkdown>
         )}
       </div>
 

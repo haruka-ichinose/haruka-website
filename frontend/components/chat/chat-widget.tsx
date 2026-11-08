@@ -5,12 +5,15 @@ import { PaperPlaneRight, Robot, X } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { ChatMessageBubble } from "./chat-message";
-import { useChat } from "./use-chat";
+import { MAX_MESSAGE_CHARS, useChat } from "./use-chat";
 
 const SUGGESTIONS = [
-  "Does Haruka have a project building a VR game?",
-  "What has Haruka written about setting up Next.js with FastAPI?",
-  "Where can I see Haruka's work history?",
+  "What's Haruka's tech stack?",
+  "Tell me about Haruka's AI engineering work",
+  "Which projects have public repos?",
+  "How was this chatbot built?",
+  "How do I get in touch?",
+  "What has Haruka written about Next.js and FastAPI?",
 ];
 
 export default function ChatWidget() {
@@ -73,7 +76,7 @@ export default function ChatWidget() {
         {messages.length === 0 ? (
           <div className="flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">
-              Ask about Haruka&apos;s projects, experience, or dev journal.
+              Ask about Haruka&apos;s projects, experience, skills, repos, or dev journal.
             </p>
             {SUGGESTIONS.map((s) => (
               <button
@@ -96,6 +99,7 @@ export default function ChatWidget() {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            maxLength={MAX_MESSAGE_CHARS}
             placeholder="Ask about Haruka…"
             className="h-9 flex-1 border border-border bg-background px-2.5 text-sm outline-none focus-visible:border-ring"
           />

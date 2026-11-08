@@ -1,6 +1,8 @@
 """RAGAS evaluation over the golden set, gated on thresholds.
 
-Metrics: faithfulness, answer relevancy, context precision, context recall.
+Metrics: faithfulness, answer relevancy, context precision, context recall, plus
+a route hit rate (share of items whose ``expected_url`` was retrieved; reported,
+not gated).
 Judge LLM + embeddings are Azure OpenAI. Prints a per-metric report, appends the
 run (tagged with ``run_datetime``) to the ``eval_results.json`` history array,
 and exits non-zero if any metric is below threshold (so it works as a CI quality
@@ -76,6 +78,12 @@ def _build_dataset(results, golden) -> EvaluationDataset:
     )
 
 
+def _route_hit_rate(results, golden) -> float | None:
+    """Fraction of items with an ``expected_url`` whose url was retrieved."""
+    hits = [g.expected_url in r.urls for g, r in zip(golden, results) if g.expected_url]
+    return sum(hits) / len(hits) if hits else None
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -105,7 +113,15 @@ def main() -> None:
         if not ok:
             failed.append(name)
 
-    entry = {"run_datetime": datetime.now(timezone.utc).isoformat(), **summary}
+    route_hit_rate = _route_hit_rate(results, GOLDEN)
+    if route_hit_rate is not None:
+        print(f"  INFO  {'route_hit_rate':<40} {route_hit_rate:.3f}")
+
+    entry = {
+        "run_datetime": datetime.now(timezone.utc).isoformat(),
+        **summary,
+        "route_hit_rate": route_hit_rate,
+    }
     total = _append_result(entry)
     logger.info("Appended run to %s (%d runs recorded)", RESULTS_PATH, total)
 

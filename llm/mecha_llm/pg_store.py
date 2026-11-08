@@ -2,8 +2,9 @@
 ``index.py`` (Azure AI Search). Exposes the same ``ensure_schema`` /
 ``upsert_chunks`` surface so ``build.py`` stays provider-agnostic.
 
-Schema lives in ``sql/001_chunks.sql`` (schema-as-code); this module applies
-that file and upserts rows keyed on chunk id.
+Schema lives in ``sql/*.sql`` (schema-as-code, applied in filename order — add a
+new numbered file for each migration); this module applies them and upserts rows
+keyed on chunk id.
 """
 
 from __future__ import annotations
@@ -20,7 +21,11 @@ from .documents import Chunk
 
 UPSERT_BATCH_SIZE = 500
 
-_SCHEMA_SQL = files("mecha_llm").joinpath("sql/001_chunks.sql").read_text()
+_SCHEMA_SQL = [
+    f.read_text()
+    for f in sorted(files("mecha_llm").joinpath("sql").iterdir(), key=lambda f: f.name)
+    if f.name.endswith(".sql")
+]
 
 # Columns written in order, content_tsv is GENERATED.
 _COLUMNS = (
@@ -35,10 +40,11 @@ async def _connect() -> asyncpg.Connection:
     return conn
 
 async def ensure_schema() -> None:
-    """Apply the idempotent schema file (extension, table, indexes)."""
+    """Apply the idempotent schema files (extension, table, indexes, migrations)."""
     conn = await _connect()
     try:
-        await conn.execute(_SCHEMA_SQL)
+        for sql in _SCHEMA_SQL:
+            await conn.execute(sql)
     finally:
         await conn.close()
 
@@ -82,16 +88,3 @@ async def upsert_chunks(
     finally:
         await conn.close()
     return len(rows)
-
-
-
-
-
-
-
-
-
-
-
-
-

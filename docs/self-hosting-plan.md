@@ -41,8 +41,8 @@ is **implementing HNSW from scratch** and eventually serving real queries with i
 4. **HNSW scope**: build in pure Python inside `llm/` with tests and benchmarks
    (recall vs brute force, vs pgvector's HNSW), then wire it into the serving
    path for real behind a `VECTOR_BACKEND=hnsw_scratch|pgvector` config flag.
-5. **Generation**: stays on Azure OpenAI (`gpt-4o`). Only retrieval and
-   embeddings move.
+5. **Generation**: stays hosted on Azure AI Foundry (`DeepSeek-V4-Flash`, swapped
+   from `gpt-4o` for cost). Only retrieval and embeddings move.
 
 ## Current architecture (what's being replaced)
 

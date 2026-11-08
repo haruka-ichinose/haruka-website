@@ -19,13 +19,23 @@ class Settings(BaseSettings):
     github_repo: str = "Jade1724/obsidian"
     journals_base_path: str = "Dev/Journals"
     content_json_path: str = "../frontend/lib/content.json"
+    profile_md_path: str = "content/profile.md"
+    # Public repos to index beyond the github links in content.json ("owner/name").
+    extra_repos: list[str] = []
 
-    # --- Azure OpenAI ---
+    # --- Azure AI Foundry ---
     azure_openai_endpoint: str = ""
     azure_openai_api_key: str = ""
     azure_openai_api_version: str = "2024-10-21"
     azure_openai_embedding_deployment: str = "text-embedding-3-large"
-    azure_openai_chat_deployment: str = "gpt-4o"
+    # Used for both generation (the system under test) and grading (the RAGAS /
+    # DeepEval judge). Mirror the backend's deployment so the eval harness
+    # measures what production actually runs.
+    azure_openai_chat_deployment: str = "DeepSeek-V4-Flash"
+    # Not every Foundry model accepts `temperature` (reasoning models reject it).
+    # Set to null/empty to omit the parameter from requests entirely — including
+    # the judges', which otherwise pin it to 0 for deterministic grading.
+    chat_temperature: float | None = 0.3
     embedding_dimensions: int = 384
 
     # --- Local embeddings (sentence-transformers) ---
