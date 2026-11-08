@@ -23,6 +23,9 @@ logger = logging.getLogger(__name__)
 RRF_K = 60
 # Candidates pulled from each arm before fusion (>= top_k gives fusion depth).
 _CANDIDATES = 50
+# At most this many chunks per source document, so one long journal entry
+# can't fill every slot.
+MAX_CHUNKS_PER_DOC = 2
 
 _HYBRID_SQL = """
 WITH vector_search AS (
@@ -46,7 +49,7 @@ fused AS (
     FROM vector_search v
     FULL OUTER JOIN keyword_search k USING (id)
 )
-SELECT c.content, c.title, c.url, c.repo_url, c.source_type, f.score
+SELECT c.doc_id, c.content, c.title, c.url, c.repo_url, c.source_type, f.score
 FROM fused f
 JOIN chunks c USING (id)
 ORDER BY f.score DESC
@@ -67,9 +70,19 @@ async def hybrid_search(
     pool: asyncpg.Pool, *, query_text: str, query_vector: list[float], top_k: int
 ) -> list[dict]:
     """Return the top-k chunks (content + citation metadata) for a query."""
+    # Fetch the whole fused list, then cap per document in score order.
     rows = await pool.fetch(
-        _HYBRID_SQL, query_vector, query_text, _CANDIDATES, RRF_K, top_k
+        _HYBRID_SQL, query_vector, query_text, _CANDIDATES, RRF_K, _CANDIDATES
     )
+    per_doc: dict[str, int] = {}
+    kept = []
+    for r in rows:
+        if per_doc.get(r["doc_id"], 0) >= MAX_CHUNKS_PER_DOC:
+            continue
+        per_doc[r["doc_id"]] = per_doc.get(r["doc_id"], 0) + 1
+        kept.append(r)
+        if len(kept) == top_k:
+            break
     return [
         {
             "content": r["content"],
@@ -79,5 +92,5 @@ async def hybrid_search(
             "source_type": r["source_type"],
             "score": r["score"],
         }
-        for r in rows
+        for r in kept
     ]

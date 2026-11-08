@@ -1,7 +1,9 @@
 # mecha-haruka — Making the Chatbot Actually Helpful
 
 > Extends `docs/mecha-haruka-rag-chatbot.md` (the original design). Written 2026-08-10,
-> after the chatbot went public on Vercel. **Not yet implemented.**
+> after the chatbot went public on Vercel. **Code for Phases 1–5 implemented 2026-11-08**
+> (uncommitted). Remaining: review `llm/content/profile.md` TODOs, rebuild the Pi index,
+> run the evals, redeploy (Verification steps 2–8).
 
 ## Context
 

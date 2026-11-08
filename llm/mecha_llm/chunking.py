@@ -18,6 +18,7 @@ from .documents import Chunk, SourceDoc
 CountTokens = Callable[[str], int]
 
 _HEADING_RE = re.compile(r"^#{1,6}\s+(.*\S)\s*$")
+_FENCE_RE = re.compile(r"^\s*(```|~~~)")
 _SENTENCE_RE = re.compile(r"(?<=[.!?])\s+")
 
 
@@ -39,10 +40,16 @@ def default_count_tokens(text: str) -> int:
 
 
 def _split_sections(text: str) -> list[tuple[str, str]]:
-    """Split markdown into (heading, body) pairs. Preamble has an empty heading."""
+    """Split markdown into (heading, body) pairs. Preamble has an empty heading.
+
+    Lines inside fenced code blocks are never headings (``# comment`` in a shell
+    snippet would otherwise split the document)."""
     sections: list[tuple[str, list[str]]] = [("", [])]
+    in_fence = False
     for line in text.splitlines():
-        m = _HEADING_RE.match(line)
+        if _FENCE_RE.match(line):
+            in_fence = not in_fence
+        m = None if in_fence else _HEADING_RE.match(line)
         if m:
             sections.append((m.group(1), []))
         else:

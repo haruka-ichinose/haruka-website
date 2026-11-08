@@ -6,7 +6,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
 export interface Citation {
   title: string;
-  source_type: "journal" | "project" | "experience" | "page";
+  source_type: "journal" | "project" | "experience" | "page" | "profile" | "repo";
   url: string;
   repo_url?: string | null;
 }

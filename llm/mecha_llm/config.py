@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     github_repo: str = "Jade1724/obsidian"
     journals_base_path: str = "Dev/Journals"
     content_json_path: str = "../frontend/lib/content.json"
+    profile_md_path: str = "content/profile.md"
+    # Public repos to index beyond the github links in content.json ("owner/name").
+    extra_repos: list[str] = []
 
     # --- Azure AI Foundry ---
     azure_openai_endpoint: str = ""

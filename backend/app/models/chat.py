@@ -24,6 +24,6 @@ class Citation(BaseModel):
     """A retrieved source the chatbot used, rendered as a clickable link/route."""
 
     title: str
-    source_type: Literal["journal", "project", "experience", "page"]
+    source_type: Literal["journal", "project", "experience", "page", "profile", "repo"]
     url: str  # internal route ("/journal/{id}", "/experience") or external URL
     repo_url: str | None = None

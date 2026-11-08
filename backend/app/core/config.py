@@ -52,7 +52,7 @@ class Settings(BaseSettings):
 
     # --- pgvector retrieval (Postgres on the Pi; replaces Azure AI Search) ---
     database_url: str = ""
-    rag_top_k: int = 5
+    rag_top_k: int = 8
 
     # --- RAG topology (hybrid: proxy on Vercel, local on the Pi) ---
     # "local": serve RAG in-process (Pi). "proxy": forward /chat upstream (Vercel).

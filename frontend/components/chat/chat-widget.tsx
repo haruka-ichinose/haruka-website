@@ -8,9 +8,12 @@ import { ChatMessageBubble } from "./chat-message";
 import { useChat } from "./use-chat";
 
 const SUGGESTIONS = [
-  "Does Haruka have a project building a VR game?",
-  "What has Haruka written about setting up Next.js with FastAPI?",
-  "Where can I see Haruka's work history?",
+  "What's Haruka's tech stack?",
+  "Tell me about Haruka's AI engineering work",
+  "Which projects have public repos?",
+  "How was this chatbot built?",
+  "How do I get in touch?",
+  "What has Haruka written about Next.js and FastAPI?",
 ];
 
 export default function ChatWidget() {
@@ -73,7 +76,7 @@ export default function ChatWidget() {
         {messages.length === 0 ? (
           <div className="flex flex-col gap-2">
             <p className="text-sm text-muted-foreground">
-              Ask about Haruka&apos;s projects, experience, or dev journal.
+              Ask about Haruka&apos;s projects, experience, skills, repos, or dev journal.
             </p>
             {SUGGESTIONS.map((s) => (
               <button

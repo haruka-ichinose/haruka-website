@@ -1,9 +1,10 @@
 """Shared data structures for the pipeline.
 
 A ``SourceDoc`` is one logical document from a content source (a journal entry, a
-project, an experience, or a navigable page). The chunker turns each ``SourceDoc``
-into one or more ``Chunk``s, which are what gets embedded and indexed. Both carry
-the metadata needed for the chatbot to cite a clickable link or route.
+project, an experience, a navigable page, a profile section, or a repo README). The
+chunker turns each ``SourceDoc`` into one or more ``Chunk``s, which are what gets
+embedded and indexed. Both carry the metadata needed for the chatbot to cite a
+clickable link or route.
 """
 
 from __future__ import annotations
@@ -12,7 +13,7 @@ from dataclasses import dataclass, field
 
 # Allowed values for ``source_type`` — kept in sync with the citation rendering
 # on the frontend (internal route vs. external link).
-SOURCE_TYPES = ("journal", "project", "experience", "page")
+SOURCE_TYPES = ("journal", "project", "experience", "page", "profile", "repo")
 
 
 @dataclass(frozen=True)
